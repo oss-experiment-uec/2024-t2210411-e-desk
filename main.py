@@ -9,6 +9,7 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 from cv2 import aruco
+from ultralytics import YOLO
 
 def onProjectorClocked(event,x,y,flag,param):
     if event==cv2.EVENT_LBUTTONDOWN:
@@ -27,6 +28,8 @@ width_canvas=width_projector-padding_projector*2
 height_canvas=height_projector-padding_projector*2
 corners_before=np.array([[0,0],[width_realsense,0],[width_realsense,height_realsense],[0,height_realsense]],dtype='float32')
 corners_after=np.array([[0,0],[width_canvas,0],[width_canvas,height_canvas],[0,height_canvas]],dtype='float32')
+
+
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
@@ -53,7 +56,9 @@ config.enable_stream(rs.stream.color, width_realsense, height_realsense, rs.form
 # Start streaming
 pipeline.start(config)
 
-# cv2.namedWindow('Projector',cv2.WND_PROP_FULLSCREEN)
+
+
+
 projectimg=np.zeros((height_projector,width_projector,3),np.uint8)
 for h in range(0,height_projector):
     for w in range(0,width_projector):
@@ -68,17 +73,20 @@ cv2.resizeWindow('Projector',1920,1080)
 cv2.setMouseCallback('Projector',onProjectorClocked)
 # cv2.setWindowProperty('Projector',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
+
+
 #aruco setup
 dict_aruco = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 
+
 #load images
-background_img=cv2.imread('./background.jpg')
+background_img=cv2.imread('./contents/background.jpg')
 background_img=cv2.flip(background_img,-1)
 
 contents_length=3
-bookimg=cv2.imread('./Meros.png')
-faceimg=cv2.imread('face.jpg')
-cap=cv2.VideoCapture('anime.webm')
+bookimg=cv2.imread('./contents/Meros.png')
+faceimg=cv2.imread('./contents/face.jpg')
+cap=cv2.VideoCapture('./contents/anime.webm')
 ret,frame=cap.read()
 contentsimg=[bookimg,frame,faceimg]
 contents_enable=np.zeros(contents_length,dtype='bool')
@@ -96,7 +104,13 @@ for i in range(0,contents_length):
     contents_corners_before[i,2]=np.array([w,h],dtype='float32')
     contents_corners_before[i,3]=np.array([0,h],dtype='float32')
 
-print(contents_corners_after)
+
+model_color=YOLO("./models/best_color.pt")
+model_depth=YOLO("./models/best_depth.pt")
+result_boxcolors=[(255,0,0),(0,255,0),(0,0,255)]
+coloron=False
+depthon=False
+#main loop
 while True:
 
     # Wait for a coherent pair of frames: depth and color
@@ -123,7 +137,7 @@ while True:
     
     mat = cv2.getPerspectiveTransform(corners_before,corners_after )#変換行列を求める
     canvas_after = cv2.warpPerspective(color_image, mat, (width_canvas, height_canvas)) #射影変換後の画像
-    cv2.imshow("Canvas",canvas_after)
+    cv2.imshow("Desk",canvas_after)
 
     contents_enable=np.zeros(contents_length,dtype='bool')#一度falseで初期化
     for i in range(0,len(corners)):
@@ -140,8 +154,6 @@ while True:
 
             content_mat=cv2.getPerspectiveTransform(contents_corners_before[i],contents_corners_after[i] )
             content_after=cv2.warpPerspective(contentsimg[i], content_mat,(width_canvas,height_canvas))
-            
-            cv2.imshow('aft',content_after)
             gray=cv2.cvtColor(content_after,cv2.COLOR_BGR2GRAY)
             ret,mask=cv2.threshold(gray,10,255,cv2.THRESH_BINARY)
             mask_inv=cv2.bitwise_not(mask)
@@ -158,6 +170,43 @@ while True:
 
     depth_small=cv2.resize(depth_colormap,None,fx=0.5,fy=0.5)
     color_small=cv2.resize(color_image,None,fx=0.5,fy=0.5)
+
+    depth_gray = (depth_image/256).astype('uint8')
+    depth_gray=cv2.cvtColor(depth_gray,cv2.COLOR_GRAY2RGB)
+    depth_gray_small=cv2.resize(depth_gray,None,fx=0.5,fy=0.5)
+    if coloron:
+        result_color=model_color(color_small)
+        result_color_boxes=result_color[0].boxes.numpy()
+        for i in range(0,len(result_color_boxes.cls)):
+            cls=result_color_boxes.cls[i]
+            xyxy=result_color_boxes.xyxy[i]
+            cv2.rectangle(color_small,(int(xyxy[0]),int(xyxy[1])),(int(xyxy[2]),int(xyxy[3])),result_boxcolors[int(cls)])
+            xy1_after=cv2.perspectiveTransform(np.array([[(xyxy[0]*2,xyxy[1]*2)]]),mat)
+            xy2_after=cv2.perspectiveTransform(np.array([[(xyxy[2]*2,xyxy[3]*2)]]),mat)
+            if cls==1:
+                mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
+                my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
+                cv2.putText(canvas,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3)        
+                # cv2.circle(canvas,(int(mx),int(my)),20,(0,0,200),thickness=-1)
+            else:
+                cv2.rectangle(canvas,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
+    if depthon:
+        result_depth=model_depth(depth_gray_small)
+        result_depth_boxes=result_depth[0].boxes.numpy()
+        
+        for i in range(0,len(result_depth_boxes.cls)):
+            cls=result_depth_boxes.cls[i]
+            xyxy=result_depth_boxes.xyxy[i]
+            cv2.rectangle(depth_small,(int(xyxy[0]),int(xyxy[1])),(int(xyxy[2]),int(xyxy[3])),result_boxcolors[int(cls)])
+            xy1_after=cv2.perspectiveTransform(np.array([[(xyxy[0]*2,xyxy[1]*2)]]),mat)
+            xy2_after=cv2.perspectiveTransform(np.array([[(xyxy[2]*2,xyxy[3]*2)]]),mat)
+            if cls==1:
+                mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
+                my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
+                cv2.putText(canvas," D",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,255,0),thickness=3)        
+                # cv2.circle(canvas,(int(mx),int(my)),20,(0,0,200),thickness=-1)
+            else:
+                cv2.rectangle(canvas,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
     images = np.hstack((color_small, depth_small))
 
     #こうする
@@ -171,10 +220,25 @@ while True:
     cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
     cv2.imshow('RealSense', images)
     cv2.imshow('Projector',projectimg)
-    if cv2.waitKey(1)==27:
+    cv2.imshow('Canvas',canvas)
+    key=cv2.waitKey(1)
+    if key==27:
         print('break!')
         break
-    print(contents_corners_after)
+    elif key==99:
+        coloron=not coloron
+    elif key==100:
+        depthon=not depthon
+    if coloron:
+        print("Detection with color is running")
+    else:
+        print("Detection with color is off")
+    if depthon:
+        print("Detection with depth is running")
+    else:
+        print("Detection with depth is off")
+
+    # print(contents_corners_after)
 #stop streaming
 pipeline.stop()
 config.disable_all_streams()
