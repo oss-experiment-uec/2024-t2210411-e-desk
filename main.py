@@ -14,7 +14,7 @@ from ultralytics import YOLO
 def onProjectorClocked(event,x,y,flag,param):
     if event==cv2.EVENT_LBUTTONDOWN:
         cv2.moveWindow('Projector',0,0)
-        cv2.resizeWindow('Projector',1920,1080)
+        cv2.resizeWindow('Projector',width_projector,height_projector)
         print('clicked Projector Window')
 # Parameter defined by me
 #USB3.1のときは1280x720まで可能，USB抜き差しでうまく3.1で認識させること または640x480
@@ -22,8 +22,10 @@ width_realsense=1280
 height_realsense=720
 fps_realsense=30
 padding_projector=80
-width_projector=1280
-height_projector=720
+# width_projector=1280
+# height_projector=720
+width_projector=1920
+height_projector=1000
 width_canvas=width_projector-padding_projector*2
 height_canvas=height_projector-padding_projector*2
 corners_before=np.array([[0,0],[width_realsense,0],[width_realsense,height_realsense],[0,height_realsense]],dtype='float32')
@@ -66,10 +68,10 @@ for h in range(0,height_projector):
         if h==padding_projector-1 or h==height_projector-padding_projector+1 or w==padding_projector-1 or w==width_projector-padding_projector+1:
             projectimg[h,w]=[0,0,255]
             pass
-cv2.namedWindow('Projector',cv2.WINDOW_NORMAL)
+cv2.namedWindow('Projector',cv2.WINDOW_FULLSCREEN)
 cv2.imshow('Projector',projectimg)
 cv2.moveWindow('Projector',0,0)
-cv2.resizeWindow('Projector',1920,1080)
+cv2.resizeWindow('Projector',width_projector,height_projector)
 cv2.setMouseCallback('Projector',onProjectorClocked)
 # cv2.setWindowProperty('Projector',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
