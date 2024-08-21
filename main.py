@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 ## License: Apache 2.0. See LICENSE file in root directory.
 ## Copyright(c) 2015-2017 Intel Corporation. All Rights Reserved.
 
@@ -10,12 +12,15 @@ import numpy as np
 import cv2
 from cv2 import aruco
 from ultralytics import YOLO
+import multiprocessing
+
 
 def onProjectorClocked(event,x,y,flag,param):
     if event==cv2.EVENT_LBUTTONDOWN:
         cv2.moveWindow('Projector',0,0)
         cv2.resizeWindow('Projector',width_projector,height_projector)
         print('clicked Projector Window')
+
 # Parameter defined by me
 #USB3.1のときは1280x720まで可能，USB抜き差しでうまく3.1で認識させること または640x480
 width_realsense=1280
@@ -85,12 +90,14 @@ dict_aruco = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 background_img=cv2.imread('./contents/background.jpg')
 background_img=cv2.flip(background_img,-1)
 
-contents_length=3
+contents_length=4
+textpage=0
 bookimg=cv2.imread('./contents/Meros.png')
+textbookimg=cv2.imread('./contents/textbook'+str(textpage)+'.png')
 faceimg=cv2.imread('./contents/face.jpg')
 cap=cv2.VideoCapture('./contents/anime.webm')
 ret,frame=cap.read()
-contentsimg=[bookimg,frame,faceimg]
+contentsimg=[textbookimg, bookimg,frame,faceimg]
 contents_enable=np.zeros(contents_length,dtype='bool')
 contents_isvideo=np.zeros(contents_length,dtype='bool')
 contents_isvideo[1]=True
@@ -112,6 +119,8 @@ model_depth=YOLO("./models/best_depth.pt")
 result_boxcolors=[(255,0,0),(0,255,0),(0,0,255)]
 coloron=False
 depthon=False
+
+
 #main loop
 while True:
 
@@ -231,6 +240,16 @@ while True:
         coloron=not coloron
     elif key==100:
         depthon=not depthon
+    elif key==48:
+        contentsimg[0]=cv2.imread('./contents/textbook0.png')        
+    elif key==49:
+        contentsimg[0]=cv2.imread('./contents/textbook1.png')        
+    elif key==50:
+        contentsimg[0]=cv2.imread('./contents/textbook2.png')        
+    elif key==51:
+        contentsimg[0]=cv2.imread('./contents/textbook3.png')        
+    elif key==52:
+        contentsimg[0]=cv2.imread('./contents/textbook4.png')        
     if coloron:
         print("Detection with color is running")
     else:
