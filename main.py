@@ -95,7 +95,7 @@ textpage=0
 bookimg=cv2.imread('./contents/Meros.png')
 textbookimg=cv2.imread('./contents/textbook'+str(textpage)+'.png')
 faceimg=cv2.imread('./contents/face.jpg')
-cap=cv2.VideoCapture('./contents/anime.webm')
+cap=cv2.VideoCapture('./contents/sm1751094.mp4')
 ret,frame=cap.read()
 contentsimg=[textbookimg, bookimg,frame,faceimg]
 contents_enable=np.zeros(contents_length,dtype='bool')
