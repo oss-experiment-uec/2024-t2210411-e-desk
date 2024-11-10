@@ -5,13 +5,12 @@ from time import perf_counter
 import ctypes
 from multiprocessing import RawArray
 class Camera:
-    rawColorBuffer=None
-    rawDepthBuffer=None
-    npColorBuffer=None
-    npDepthBuffer=None
+    # rawColorBuffer=None
+    # rawDepthBuffer=None
+    # npColorBuffer=None
+    # npDepthBuffer=None
     cvmatColorBuffer=None
     cvmatDepthBuffer=None
-    color_image=None
     def __init__(self,width,height,fps):
         self.width=width
         self.height=height
@@ -53,15 +52,6 @@ class Camera:
         pass
     def disconnect():
         pass
-    #共有メモリを登録
-    def setColorBuffer(self,cvmat):
-        # self.rawColorBuffer=buf
-        self.cvmatColorBuffer=cvmat
-        print("cvmatbuffer",self.cvmatColorBuffer.shape)
-        pass
-    def setDepthBuffer(self,buf):
-        self.rawDepthBuffer=buf
-        pass
     def update(self):
         stime=perf_counter()
         # Wait for a coherent pair of frames: depth and color
@@ -77,28 +67,21 @@ class Camera:
         # Convert images to numpy arrays
         self.depth_image = np.asanyarray(self.depth_frame.get_data())
         self.color_image = np.asanyarray(self.color_frame.get_data())
-        # images = np.hstack((self.color_image, self.depth_image))
         self.writeBuffer()
-        # cv2.imshow('color(c)', self.color_image)
-        # cv2.imshow('depth(c)', self.depth_image)
-        # cv2.waitKey(1)
         etime=perf_counter()
         print("Camera.update():",etime-stime)
     def writeBuffer(self):
-        # colorVec=self.color_image.reshape(self.length)
-        # ctypeColorVec=colorVec.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.length)).contents
-        # self.rawColorBuffer=ctypeColorVec
         np.copyto(self.cvmatColorBuffer,self.color_image)
-        cv2.imshow("cameralib",self.cvmatColorBuffer)
-        cv2.waitKey(1)
+        #デバッグ用
+        # cv2.imshow("cameralib",self.cvmatColorBuffer)
+        # cv2.waitKey(1)
+
     def process(self,colorBuffer):
         self.connect()
         vec=np.ctypeslib.as_array(colorBuffer)
-        for i in range(0,200000):
+        for i in range(0,20000): #debug用
             vec[i]=255
         self.cvmatColorBuffer=vec.reshape(self.height,self.width,3)
         while True:
             self.update()
             pass
-    def getColorBuffer(self):
-        return self.cvmatColorBuffer

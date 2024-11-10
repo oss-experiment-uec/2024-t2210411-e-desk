@@ -44,7 +44,6 @@ class Main:
         self.colorBuffer=RawArray('B',ctypesColorBuffer)
         self.depthBuffer=RawArray('B',ctypesDepthBuffer)
         
-        self.camera.setColorBuffer(self.colorMat)
         cameraProcess=Process(target=self.camera.process,args=[self.colorBuffer])
         cameraProcess.start()
         pass
@@ -53,12 +52,6 @@ class Main:
         mat=vec.reshape(self.height_realsense,self.width_realsense,3)
         cv2.imshow("color",mat)
         cv2.waitKey(1)
-        pass
-    def buffer2cvmat(self):
-        ndcolor=np.array(self.colorBuffer,dtype=np.uint8)
-        self.colorMat=ndcolor.reshape((self.height_realsense,self.width_realsense,3))
-        nddepth=np.array(self.depthBuffer,dtype=np.uint8)
-        self.depthMat=nddepth.reshape((self.height_realsense,self.width_realsense,3))        
         pass
     pass
 
