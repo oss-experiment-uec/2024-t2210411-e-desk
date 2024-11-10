@@ -1,3 +1,5 @@
+#このコードを参考に処理を分けていく
+
 #!/usr/bin/python3
 
 ## License: Apache 2.0. See LICENSE file in root directory.

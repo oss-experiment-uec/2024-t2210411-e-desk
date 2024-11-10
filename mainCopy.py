@@ -1,3 +1,5 @@
+#もともとのmain.pyのコピー，これは変えず残しておく(資料用)
+
 #!/usr/bin/python3
 
 ## License: Apache 2.0. See LICENSE file in root directory.
