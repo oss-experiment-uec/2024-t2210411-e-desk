@@ -2,12 +2,11 @@ import cv2
 
 #コンテンツクラス
 class Contents:
-    x=0
-    y=0
-    h=0
-    w=0
-    id=0
-    def __init__():
+    def __init__(self):
+        self.x=0
+        self.y=0
+        self.w=0
+        self.h=0
         pass
     def update():
         pass
