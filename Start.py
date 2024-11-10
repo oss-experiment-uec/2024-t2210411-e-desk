@@ -34,18 +34,7 @@ class Main:
     pass
 
 
-def setup():
-    # yoloDetector=YoloDetector()
-    # arucoDetector=ArucoDetector()
-    # contentManager=ContentManager()
-    #camera.connect()
-    # while True:
-    pass
-        
 
-def update():
-    # camera.update()
-    pass
 if __name__ == "__main__":
     main=Main()
 
