@@ -16,37 +16,49 @@ import ctypes
 class Main:
     #Parameter for Realsense
     #USB3.1のときは1280x720まで可能，USB抜き差しでうまく3.1で認識させること または640x480
-    width_realsense=1280
-    height_realsense=720
-    fps_realsense=30
+    realsense_width=1280
+    realsense_height=720
+    realsense_fps=30
 
-    padding_projector=80
+    #Parameter for Canvas
+    projector_padding=80
+    projector_width=1920
+    projector_height=1000
+    canvas_width=projector_width-projector_padding*2
+    canvas_height=projector_height-projector_padding*2
+
     #1d-Array(ctype),こいつが共有メモリ 
-    colorBuffer=None
-    depthBuffer=None
+    cameraColorBuffer=None
+    cameraDepthBuffer=None
+    projectingBuffer=None
+    canvasBuffer=None
     #ctypeだとOpenCVで扱いにくいのでndarrayに変更．ただし同じデータを指すポインタになっているはず
-    colorMat=None
-    depthMat=None
+    cameraColorMat=None
+    cameraDepthMat=None
+    projectingMat=None
+    canvasMat=None
 
     camera=None
+    canvas=None
+    contentManager=None
     def __init__(self):
         self.setup()
         pass
     def initCamera(self):
-        self.camera=NormalCamera(self.width_realsense,self.height_realsense,self.fps_realsense)
-        # self.camera=RealSense(self.width_realsense,self.height_realsense,self.fps_realsense)
-        self.cameraBufferLength=self.width_realsense*self.height_realsense*3
+        self.camera=NormalCamera(self.realsense_width,self.realsense_height,self.realsense_fps)
+        # self.camera=RealSense(self.realsense_width,self.realsense_height,self.realsense_fps)
+        self.cameraBufferLength=self.realsense_width*self.realsense_height*3
         
         #Camera用Bufferの作成
-        cmat=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
-        dmat=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
-        ctypesColorBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
-        ctypesDepthBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
+        cmat=np.zeros((self.realsense_height,self.realsense_width,3),dtype=np.uint8)
+        dmat=np.zeros((self.realsense_height,self.realsense_width,3),dtype=np.uint8)
+        ctypescameraColorBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
+        ctypescameraDepthBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
         
-        self.colorBuffer=RawArray('B',ctypesColorBuffer)
-        self.depthBuffer=RawArray('B',ctypesDepthBuffer)
+        self.cameraColorBuffer=RawArray('B',ctypescameraColorBuffer)
+        self.cameraDepthBuffer=RawArray('B',ctypescameraDepthBuffer)
         
-        cameraProcess=Process(target=self.camera.process,args=[self.colorBuffer,self.depthBuffer])
+        cameraProcess=Process(target=self.camera.process,args=[self.cameraColorBuffer,self.cameraDepthBuffer])
         cameraProcess.start()
     def setup(self):
         self.initCamera()
@@ -54,13 +66,13 @@ class Main:
 
         pass
     def update(self):
-        colorVec=np.ctypeslib.as_array(self.colorBuffer)
-        colorMat=colorVec.reshape(self.height_realsense,self.width_realsense,3)
-        depthVec=np.ctypeslib.as_array(self.depthBuffer)
-        depthMat=depthVec.reshape(self.height_realsense,self.width_realsense,3)
+        colorVec=np.ctypeslib.as_array(self.cameraColorBuffer)
+        cameraColorMat=colorVec.reshape(self.realsense_height,self.realsense_width,3)
+        depthVec=np.ctypeslib.as_array(self.cameraDepthBuffer)
+        cameraDepthMat=depthVec.reshape(self.realsense_height,self.realsense_width,3)
         
-        cv2.imshow("color",colorMat)
-        cv2.imshow("depth",depthMat)
+        cv2.imshow("color",cameraColorMat)
+        cv2.imshow("depth",cameraDepthMat)
         cv2.waitKey(1)
         pass
     pass

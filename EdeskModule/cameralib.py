@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from time import perf_counter
 import ctypes
-from multiprocessing import RawArray
+# from multiprocessing import RawArray
 class Camera:
     #この宣言の仕方正しいのか知らん
     width=None

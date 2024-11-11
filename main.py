@@ -31,10 +31,8 @@ fps_realsense=30
 padding_projector=80
 # width_projector=1280
 # height_projector=720
-width_projector=1920
-height_projector=1000
-width_canvas=width_projector-padding_projector*2
-height_canvas=height_projector-padding_projector*2
+
+
 corners_before=np.array([[0,0],[width_realsense,0],[width_realsense,height_realsense],[0,height_realsense]],dtype='float32')
 corners_after=np.array([[0,0],[width_canvas,0],[width_canvas,height_canvas],[0,height_canvas]],dtype='float32')
 
