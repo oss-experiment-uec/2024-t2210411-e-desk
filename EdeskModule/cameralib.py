@@ -103,7 +103,7 @@ class RealSense(Camera):
             self.update()
             pass
 class NormalCamera(Camera):
-    cameraID=4
+    cameraID=3
     capture=None
     def connect(self):
         self.capture=cv2.VideoCapture(self.cameraID)
@@ -117,13 +117,14 @@ class NormalCamera(Camera):
     def update(self):
         (ret,frame)=self.capture.read()
         if ret:
+            print("NormalCamera.Update:Get Data!!!")
             self.color_image=cv2.resize(frame,(self.width,self.height))
             self.depth_image=self.color_image
 
             self.write2Buffer()
             pass
         else:
-            print("No data")
+            print("NormalCamera.Update:No data")
     def write2Buffer(self):
         np.copyto(self.cvmatColorBuffer,self.color_image)
         np.copyto(self.cvmatDepthBuffer,self.depth_image)
