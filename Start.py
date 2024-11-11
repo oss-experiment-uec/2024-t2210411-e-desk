@@ -9,7 +9,7 @@ from EdeskModule.cameralib import Camera,RealSense,NormalCamera
 from EdeskModule.detectorlib import YoloDetector,ArucoDetector
 from EdeskModule.contentlib import ContentManager
 
-from multiprocessing import RawArray,Process
+from multiprocessing import RawArray,Process,Manager
 from time import perf_counter
 import ctypes
 
@@ -46,6 +46,14 @@ class Main:
     cameraProcess=None
     canvasProcess=None
     contentManagerProcess=None
+
+    manager=None
+    arucoResult=None
+    yoloResult=None
+    aruco=None
+    yolo=None
+    arucoProcess=None
+    yoloProcess=None
     def __init__(self):
         self.setup()
         pass
@@ -63,8 +71,7 @@ class Main:
         self.cameraColorBuffer=RawArray('B',ctypescameraColorBuffer)
         self.cameraDepthBuffer=RawArray('B',ctypescameraDepthBuffer)
         
-        self.cameraProcess=Process(target=self.camera.process,args=[self.cameraColorBuffer,self.cameraDepthBuffer])
-        self.cameraProcess.start()
+        
         pass
     def initCanvas(self):
         self.canvas=Canvas(self.projector_height,self.projector_width,self.projector_padding)
@@ -79,14 +86,29 @@ class Main:
         self.canvasBuffer=RawArray('B',ctypesCanvasBuffer)
         self.projectingBuffer=RawArray('B',ctypesProjectingBuffer)
         
-        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer])
-        self.canvasProcess.start()
-    def initiDetector(self):
+        
+    def initDetector(self):
+        manager=Manager()
+        self.yoloResult=manager.list()
+        self.arucoResult=manager.list()
+        self.arucoResult.append(None)
+        self.arucoResult.append(None)
+        self.aruco=ArucoDetector(self.realsense_width,self.realsense_height)
+        self.yolo=YoloDetector(self.realsense_width,self.realsense_height)
+        
         pass
     def setup(self):
         self.initCamera()
         self.initCanvas()
-        self.initiDetector()
+        self.initDetector()
+        self.cameraProcess=Process(target=self.camera.process,args=[self.cameraColorBuffer,self.cameraDepthBuffer])
+        self.cameraProcess.start()
+        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.arucoResult,self.yoloResult])
+        self.canvasProcess.start()
+        self.arucoProcess=Process(target=self.aruco.process,args=[self.arucoResult,self.cameraColorBuffer,self.cameraDepthBuffer])
+        self.yoloProcess=Process(target=self.yolo.process,args=[self.yoloResult,self.cameraColorBuffer,self.cameraDepthBuffer])
+        self.arucoProcess.start()
+        self.yoloProcess.start()
         pass
     def update(self):
         colorVec=np.ctypeslib.as_array(self.cameraColorBuffer)
@@ -98,6 +120,7 @@ class Main:
             cv2.imshow("color",cameraColorMat)
             cv2.imshow("depth",cameraDepthMat)
             cv2.waitKey(1)
+            print("ArucoResult",self.arucoResult)
         pass
     pass
 
@@ -110,5 +133,5 @@ if __name__ == "__main__":
         stime=perf_counter()
         main.update()
         etime=perf_counter()
-        print("Main time:",etime-stime)
+        # print("Main time:",etime-stime)
     pass

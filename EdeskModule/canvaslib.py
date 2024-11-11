@@ -3,6 +3,7 @@ import cv2,ctypes
 import numpy as np
 from time import perf_counter
 from EdeskModule.contentlib import ContentManager
+from EdeskModule.detectorlib import Detector
 # from multiprocessing import RawArray
 class Canvas:
     projector_width=None
@@ -16,6 +17,7 @@ class Canvas:
     canvasMat=None
 
     contentManager=None
+    detector=None
     def __init__(self,p_height,p_width,padding):
         #パラメータの初期化
         self.projector_height=p_height
@@ -35,13 +37,21 @@ class Canvas:
         pass
     def update(self):
         #各コンテンツの重ね合わせ
-        self.contentManager.editCanvas(self.canvasMat)
+
+
+        contents=self.contentManager.editCanvas(self.canvasMat)
+        contents=self.contentManager.getContents()
+        for content in contents:
+            pass
+        self.canvasMat[:,:,2]+=1
+        self.canvasMat[:,:,2]%=200
+
         self.projectingMat[self.projector_padding:self.projector_height-self.projector_padding,self.projector_padding:self.projector_width-self.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
         cv2.waitKey(1)
-        print("Canvas.Update")
+        # print("Canvas.Update")
         pass
-    def process(self,canvasBuffer,projectingBuffer):
+    def process(self,canvasBuffer,projectingBuffer,arucoResult,yoloResult):
         #ここに引数のarrayとフィールドのmatの関連付け処理を入れる
         #Realsenseクラスを参考
         cvec=np.ctypeslib.as_array(canvasBuffer)
@@ -60,7 +70,7 @@ class Canvas:
             stime=perf_counter()
             self.update()
             etime=perf_counter()
-            print("Canvas.update:",etime-stime)
+            # print("Canvas.update:",etime-stime)
         pass
     #プロジェクタの位置にウィンドウを移動
     def onProjectorClicked(self,event,x,y,flag,param):

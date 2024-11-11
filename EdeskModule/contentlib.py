@@ -37,11 +37,13 @@ class ContentManager:
                 self.contentsArray.append(Video(self.contentsFile[i]))
         pass
     def update(self):
-        print("ContentManager:update")
+        # print("ContentManager:update")
         pass
     def editCanvas(self,canvasMat,arcuoResult=None,YoloResult=None):
         canvasMat[:,:,0]+=1
         canvasMat[:,:,0]%=200
-        print("ContentManager:Edited canvas")
+        # print("ContentManager:Edited canvas")
         pass
     pass
+    def getContents(self):
+        return self.contentsArray

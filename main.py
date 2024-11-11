@@ -22,8 +22,6 @@ corners_after=np.array([[0,0],[width_canvas,0],[width_canvas,height_canvas],[0,h
 
 
 
-#aruco setup
-dict_aruco = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 
 
 #load images
@@ -151,13 +149,6 @@ while True:
                 cv2.rectangle(canvas,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
     images = np.hstack((color_small, depth_small))
 
-    #こうする
-    projectimg[padding_projector:height_projector-padding_projector,padding_projector:width_projector-padding_projector]=canvas
-    #下の方法はとんでもなく遅いのでNG
-    # for h in range(0,height_canvas):
-    #     for w in range(0,width_canvas):
-    #         projectimg[h+padding_projector,w+padding_projector]=background_img[h,w]
-    
     # Show images
     cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
     cv2.imshow('RealSense', images)
