@@ -86,7 +86,7 @@ class RealSense(Camera):
         self.color_image = np.asanyarray(self.color_frame.get_data())
         self.write2Buffer()
         etime=perf_counter()
-        print("Camera.update():",etime-stime)
+        # print("Camera.update():",etime-stime)
     def write2Buffer(self):
         np.copyto(self.cvmatColorBuffer,self.color_image)
         #デバッグ用
@@ -117,14 +117,15 @@ class NormalCamera(Camera):
     def update(self):
         (ret,frame)=self.capture.read()
         if ret:
-            print("NormalCamera.Update:Get Data!!!")
+            # print("NormalCamera.Update:Get Data!!!")
             self.color_image=cv2.resize(frame,(self.width,self.height))
             self.depth_image=self.color_image
 
             self.write2Buffer()
             pass
         else:
-            print("NormalCamera.Update:No data")
+            # print("NormalCamera.Update:No data")
+            pass
     def write2Buffer(self):
         np.copyto(self.cvmatColorBuffer,self.color_image)
         np.copyto(self.cvmatDepthBuffer,self.depth_image)
@@ -140,5 +141,5 @@ class NormalCamera(Camera):
             stime=perf_counter()
             self.update()
             etime=perf_counter()
-            print("NormalCamera:",etime-stime)
+            # print("NormalCamera:",etime-stime)
             pass

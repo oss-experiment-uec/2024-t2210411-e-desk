@@ -16,6 +16,8 @@ class Canvas:
     #ここにコンテンツを書き込み，最終的にprojectingImageに埋め込む
     canvasMat=None
 
+    arucoResult=None
+    yoloResult=None
     contentManager=None
     detector=None
     def __init__(self,p_height,p_width,padding):
@@ -36,15 +38,18 @@ class Canvas:
         cv2.setMouseCallback('Projector',self.onProjectorClicked)
         pass
     def update(self):
+        #arucoResultは勝手に書き換わる
+        #キャリブレーション処理
+
         #各コンテンツの重ね合わせ
-
-
         contents=self.contentManager.editCanvas(self.canvasMat)
         contents=self.contentManager.getContents()
         for content in contents:
             pass
-        self.canvasMat[:,:,2]+=1
-        self.canvasMat[:,:,2]%=200
+
+        
+        # self.canvasMat[:,:,2]+=1
+        # self.canvasMat[:,:,2]%=200
 
         self.projectingMat[self.projector_padding:self.projector_height-self.projector_padding,self.projector_padding:self.projector_width-self.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
@@ -58,7 +63,8 @@ class Canvas:
         self.canvasMat=cvec.reshape(self.canvas_height,self.canvas_width,3)
         pvec=np.ctypeslib.as_array(projectingBuffer)
         self.projectingMat=pvec.reshape(self.projector_height,self.projector_width,3)
-        
+        self.yoloResult=yoloResult
+        self.arucoResult=arucoResult
         #赤線を引くだけ
         self.projectingMat[self.projector_padding-1,:,2]=255
         self.projectingMat[self.projector_height-self.projector_padding+1,:,2]=255

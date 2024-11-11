@@ -45,12 +45,13 @@ class ArucoDetector(Detector):
     def update(self):
         # detect AR markers
         corners, ids, rejectedImgPoints = self.detector.detectMarkers(self.colorMat)
-        aruco.drawDetectedMarkers(self.colorMat,corners,ids)
         self.result[0]=deepcopy(corners)
         self.result[1]=deepcopy(ids)
         if self.DEBUG:
-            self.colorMat[100:200,100:150,0]=255
-            cv2.imshow("Aruco",self.colorMat)
+            # self.colorMat[100:200,100:150,0]=255
+            mat=np.copy(self.colorMat)
+            aruco.drawDetectedMarkers(mat,corners,ids)
+            cv2.imshow("Aruco",mat)
             cv2.waitKey(1)
             # print("Aruco Update Done!!!",corners)
         pass

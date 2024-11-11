@@ -120,7 +120,7 @@ class Main:
             cv2.imshow("color",cameraColorMat)
             cv2.imshow("depth",cameraDepthMat)
             cv2.waitKey(1)
-            print("ArucoResult",self.arucoResult)
+            # print("ArucoResult",self.arucoResult)
         pass
     pass
 
