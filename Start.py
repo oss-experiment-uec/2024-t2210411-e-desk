@@ -5,7 +5,7 @@ import cv2
 from cv2 import aruco
 import multiprocessing
 from EdeskModule.canvaslib import Canvas
-from EdeskModule.cameralib import Camera
+from EdeskModule.cameralib import Camera,RealSense,NormalCamera
 from EdeskModule.detectorlib import YoloDetector,ArucoDetector
 from EdeskModule.contentlib import ContentManager
 
@@ -21,8 +21,10 @@ class Main:
     fps_realsense=30
 
     padding_projector=80
+    #1d-Array(ctype),こいつが共有メモリ 
     colorBuffer=None
     depthBuffer=None
+    #ctypeだとOpenCVで扱いにくいのでndarrayに変更．ただし同じデータを指すポインタになっているはず
     colorMat=None
     depthMat=None
 
@@ -30,27 +32,35 @@ class Main:
     def __init__(self):
         self.setup()
         pass
-    def setup(self):
-        self.canvas=Canvas()
-        self.camera=Camera(self.width_realsense,self.height_realsense,self.fps_realsense)
+    def initCamera(self):
+        self.camera=NormalCamera(self.width_realsense,self.height_realsense,self.fps_realsense)
+        # self.camera=RealSense(self.width_realsense,self.height_realsense,self.fps_realsense)
         self.cameraBufferLength=self.width_realsense*self.height_realsense*3
         
-        self.colorMat=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
-        npDepthBuffer=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
-        
-        ctypesColorBuffer=self.colorMat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
-        ctypesDepthBuffer=npDepthBuffer.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
+        #Camera用Bufferの作成
+        cmat=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
+        dmat=np.zeros((self.height_realsense,self.width_realsense,3),dtype=np.uint8)
+        ctypesColorBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
+        ctypesDepthBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
         
         self.colorBuffer=RawArray('B',ctypesColorBuffer)
         self.depthBuffer=RawArray('B',ctypesDepthBuffer)
         
-        cameraProcess=Process(target=self.camera.process,args=[self.colorBuffer])
+        cameraProcess=Process(target=self.camera.process,args=[self.colorBuffer,self.depthBuffer])
         cameraProcess.start()
+    def setup(self):
+        self.initCamera()
+        self.canvas=Canvas()
+
         pass
     def update(self):
-        vec=np.ctypeslib.as_array(self.colorBuffer)
-        mat=vec.reshape(self.height_realsense,self.width_realsense,3)
-        cv2.imshow("color",mat)
+        colorVec=np.ctypeslib.as_array(self.colorBuffer)
+        colorMat=colorVec.reshape(self.height_realsense,self.width_realsense,3)
+        depthVec=np.ctypeslib.as_array(self.depthBuffer)
+        depthMat=depthVec.reshape(self.height_realsense,self.width_realsense,3)
+        
+        cv2.imshow("color",colorMat)
+        cv2.imshow("depth",depthMat)
         cv2.waitKey(1)
         pass
     pass

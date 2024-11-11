@@ -5,10 +5,10 @@ from time import perf_counter
 import ctypes
 from multiprocessing import RawArray
 class Camera:
-    # rawColorBuffer=None
-    # rawDepthBuffer=None
-    # npColorBuffer=None
-    # npDepthBuffer=None
+    #この宣言の仕方正しいのか知らん
+    width=None
+    height=None
+    fps=None
     cvmatColorBuffer=None
     cvmatDepthBuffer=None
     def __init__(self,width,height,fps):
@@ -17,8 +17,25 @@ class Camera:
         self.fps=fps
         self.length=self.width*self.height*3
         self.color_image=np.zeros((height,width,3),dtype=np.uint8)
+        self.depth_image=np.zeros((height,width,3),dtype=np.uint8)
+        self.cvmatColorBuffer=np.zeros((height,width,3),dtype=np.uint8)
+        self.cvmatDepthBuffer=np.zeros((height,width,3),dtype=np.uint8)
         # self.connect()
         pass
+    def connect(self):
+        pass
+    def disconnect(self):
+        pass
+    def update(self):
+        pass
+    def process(self):
+        pass
+
+    pass
+class RealSense(Camera):
+    
+    
+    #ここの記述は公式?デモほぼそのまま
     def connect(self):
         # Configure depth and color streams
         self.pipeline = rs.pipeline()
@@ -39,8 +56,6 @@ class Camera:
             print("The demo requires Depth camera with Color sensor")
             exit(0)
 
-
-
         # config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
         self.config.enable_stream(rs.stream.depth, self.width, self.height, rs.format.z16, self.fps)
         # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -50,7 +65,9 @@ class Camera:
 
         print("Camera:success to connect the camera!")
         pass
-    def disconnect():
+    def disconnect(self):
+        self.pipeline.stop()
+        self.config.disable_all_streams()
         pass
     def update(self):
         stime=perf_counter()
@@ -67,16 +84,16 @@ class Camera:
         # Convert images to numpy arrays
         self.depth_image = np.asanyarray(self.depth_frame.get_data())
         self.color_image = np.asanyarray(self.color_frame.get_data())
-        self.writeBuffer()
+        self.write2Buffer()
         etime=perf_counter()
         print("Camera.update():",etime-stime)
-    def writeBuffer(self):
+    def write2Buffer(self):
         np.copyto(self.cvmatColorBuffer,self.color_image)
         #デバッグ用
         # cv2.imshow("cameralib",self.cvmatColorBuffer)
         # cv2.waitKey(1)
 
-    def process(self,colorBuffer):
+    def process(self,colorBuffer,depthBuffer):
         self.connect()
         vec=np.ctypeslib.as_array(colorBuffer)
         for i in range(0,20000): #debug用
@@ -84,4 +101,43 @@ class Camera:
         self.cvmatColorBuffer=vec.reshape(self.height,self.width,3)
         while True:
             self.update()
+            pass
+class NormalCamera(Camera):
+    cameraID=4
+    capture=None
+    def connect(self):
+        self.capture=cv2.VideoCapture(self.cameraID)
+        if self.capture.isOpened():
+            print("Success to open normal camera!!!")
+        else:
+            print("Failed to open normal camera...")
+        pass
+    def disconnect(self):
+        pass
+    def update(self):
+        (ret,frame)=self.capture.read()
+        if ret:
+            self.color_image=cv2.resize(frame,(self.width,self.height))
+            self.depth_image=self.color_image
+
+            self.write2Buffer()
+            pass
+        else:
+            print("No data")
+    def write2Buffer(self):
+        np.copyto(self.cvmatColorBuffer,self.color_image)
+        np.copyto(self.cvmatDepthBuffer,self.depth_image)
+        pass
+    def process(self,colorBuffer,depthBuffer):
+        self.connect()
+        cvec=np.ctypeslib.as_array(colorBuffer)
+        self.cvmatColorBuffer=cvec.reshape(self.height,self.width,3)
+        dvec=np.ctypeslib.as_array(depthBuffer)
+        self.cvmatDepthBuffer=dvec.reshape(self.height,self.width,3)
+        
+        while True:
+            stime=perf_counter()
+            self.update()
+            etime=perf_counter()
+            print("NormalCamera:",etime-stime)
             pass
