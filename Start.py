@@ -8,26 +8,14 @@ from EdeskModule.canvaslib import Canvas
 from EdeskModule.cameralib import Camera,RealSense,NormalCamera
 from EdeskModule.detectorlib import YoloDetector,ArucoDetector
 from EdeskModule.contentlib import ContentManager
-
+from EdeskModule.sharedObject import Constants
 from multiprocessing import RawArray,Process,Manager
 from time import perf_counter
 import ctypes
 
 class Main:
-    DEBUG=True
-    #Parameter for Realsense
-    #USB3.1のときは1280x720まで可能，USB抜き差しでうまく3.1で認識させること または640x480
-    realsense_width=1280
-    realsense_height=720
-    realsense_fps=30
 
-    #Parameter for Canvas
-    projector_padding=80
-    projector_width=1920
-    projector_height=1000
-    canvas_width=projector_width-projector_padding*2
-    canvas_height=projector_height-projector_padding*2
-
+    c=None
     #共有メモリは基本的にMainが保持，ContentsはキリがないのでContentsManagerで
     #1d-Array(ctype),こいつが共有メモリ
     cameraColorBuffer=None
@@ -58,15 +46,13 @@ class Main:
         self.setup()
         pass
     def initCamera(self):
-        self.camera=NormalCamera(self.realsense_width,self.realsense_height,self.realsense_fps)
-        # self.camera=RealSense(self.realsense_width,self.realsense_height,self.realsense_fps)
-        self.cameraBufferLength=self.realsense_width*self.realsense_height*3
-        
+        self.camera=NormalCamera()
+
         #Camera用Bufferの作成
-        cmat=np.zeros((self.realsense_height,self.realsense_width,3),dtype=np.uint8)
-        dmat=np.zeros((self.realsense_height,self.realsense_width,3),dtype=np.uint8)
-        ctypescameraColorBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
-        ctypescameraDepthBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.cameraBufferLength)).contents
+        cmat=np.zeros((self.c.camera_height,self.c.camera_width,3),dtype=np.uint8)
+        dmat=np.zeros((self.c.camera_height,self.c.camera_width,3),dtype=np.uint8)
+        ctypescameraColorBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.c.camera_length)).contents
+        ctypescameraDepthBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.c.camera_length)).contents
         
         self.cameraColorBuffer=RawArray('B',ctypescameraColorBuffer)
         self.cameraDepthBuffer=RawArray('B',ctypescameraDepthBuffer)
@@ -74,14 +60,12 @@ class Main:
         
         pass
     def initCanvas(self):
-        self.canvas=Canvas(self.projector_height,self.projector_width,self.projector_padding)
-        self.canvasBufferLength=self.canvas_height*self.canvas_width*3
-        self.projectingBufferLength=self.projector_height*self.projector_width*3
+        self.canvas=Canvas()
 
-        cmat=np.zeros((self.canvas_height,self.canvas_width,3),dtype=np.uint8)
-        dmat=np.zeros((self.projector_height,self.projector_width,3),dtype=np.uint8)
-        ctypesCanvasBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.canvasBufferLength)).contents
-        ctypesProjectingBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.projectingBufferLength)).contents
+        cmat=np.zeros((self.c.canvas_height,self.c.canvas_width,3),dtype=np.uint8)
+        dmat=np.zeros((self.c.projector_height,self.c.projector_width,3),dtype=np.uint8)
+        ctypesCanvasBuffer=cmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.c.canvas_length)).contents
+        ctypesProjectingBuffer=dmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*self.c.projector_length)).contents
         
         self.canvasBuffer=RawArray('B',ctypesCanvasBuffer)
         self.projectingBuffer=RawArray('B',ctypesProjectingBuffer)
@@ -93,30 +77,31 @@ class Main:
         self.arucoResult=manager.list()
         self.arucoResult.append(None)
         self.arucoResult.append(None)
-        self.aruco=ArucoDetector(self.realsense_width,self.realsense_height)
-        self.yolo=YoloDetector(self.realsense_width,self.realsense_height)
+        self.aruco=ArucoDetector()
+        self.yolo=YoloDetector()
         
         pass
     def setup(self):
+        self.c=Constants()
         self.initCamera()
         self.initCanvas()
         self.initDetector()
-        self.cameraProcess=Process(target=self.camera.process,args=[self.cameraColorBuffer,self.cameraDepthBuffer])
+        self.cameraProcess=Process(target=self.camera.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.cameraProcess.start()
-        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.arucoResult,self.yoloResult])
+        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.canvasProcess.start()
-        self.arucoProcess=Process(target=self.aruco.process,args=[self.arucoResult,self.cameraColorBuffer,self.cameraDepthBuffer])
-        self.yoloProcess=Process(target=self.yolo.process,args=[self.yoloResult,self.cameraColorBuffer,self.cameraDepthBuffer])
+        self.arucoProcess=Process(target=self.aruco.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
+        self.yoloProcess=Process(target=self.yolo.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.arucoProcess.start()
         self.yoloProcess.start()
         pass
     def update(self):
         colorVec=np.ctypeslib.as_array(self.cameraColorBuffer)
-        cameraColorMat=colorVec.reshape(self.realsense_height,self.realsense_width,3)
+        cameraColorMat=colorVec.reshape(self.c.camera_height,self.c.camera_width,3)
         depthVec=np.ctypeslib.as_array(self.cameraDepthBuffer)
-        cameraDepthMat=depthVec.reshape(self.realsense_height,self.realsense_width,3)
+        cameraDepthMat=depthVec.reshape(self.c.camera_height,self.c.camera_width,3)
         
-        if self.DEBUG:
+        if self.c.DEBUG:
             cv2.imshow("color",cameraColorMat)
             cv2.imshow("depth",cameraDepthMat)
             cv2.waitKey(1)

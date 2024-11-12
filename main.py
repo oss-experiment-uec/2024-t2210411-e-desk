@@ -71,13 +71,7 @@ while True:
     corners, ids, rejectedImgPoints = aruco.detectMarkers(color_image, dict_aruco)
     aruco.drawDetectedMarkers(color_image,corners,ids)
     # print(ids)
-    for i in range(0,len(corners)):
-        if ids[i]//4==0:#キャリブレーション用の4隅
-            corners_before[ids[i]]=corners[i][0][0] #id番目の0個目のマーカーの左上
     
-    mat = cv2.getPerspectiveTransform(corners_before,corners_after )#変換行列を求める
-    canvas_after = cv2.warpPerspective(color_image, mat, (width_canvas, height_canvas)) #射影変換後の画像
-    cv2.imshow("Desk",canvas_after)
 
     contents_enable=np.zeros(contents_length,dtype='bool')#一度falseで初期化
     for i in range(0,len(corners)):
