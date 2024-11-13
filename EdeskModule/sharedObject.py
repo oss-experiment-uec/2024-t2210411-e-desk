@@ -22,6 +22,18 @@ class Constants:
     canvas_length=canvas_height*canvas_width*3
 
     cameraID=4
+
+
+    N_CONTENTS=3
+    contentsType=[1,0,0]#0:Image, 1:Video
+    videoType=1
+    imageType=0
+    contentsFile=["anime.webm","Meros.png","face.jpg"]
+    contents_path="./contents/"
+
+    result_boxcolors=[(255,0,0),(0,255,0),(0,0,255)]
+
+    TIMEOUT=2.0 #なんか厳密に守られてない感
     pass
 class MyProcess(Constants):
     cameraColorMat=None

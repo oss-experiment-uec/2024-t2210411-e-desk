@@ -17,12 +17,6 @@ from ultralytics import YOLO
 import multiprocessing
 
 
-corners_before=np.array([[0,0],[width_realsense,0],[width_realsense,height_realsense],[0,height_realsense]],dtype='float32')
-corners_after=np.array([[0,0],[width_canvas,0],[width_canvas,height_canvas],[0,height_canvas]],dtype='float32')
-
-
-
-
 
 #load images
 background_img=cv2.imread('./contents/background.jpg')
@@ -52,9 +46,7 @@ for i in range(0,contents_length):
     contents_corners_before[i,3]=np.array([0,h],dtype='float32')
 
 
-model_color=YOLO("./models/best_color.pt")
-model_depth=YOLO("./models/best_depth.pt")
-result_boxcolors=[(255,0,0),(0,255,0),(0,0,255)]
+
 coloron=False
 depthon=False
 

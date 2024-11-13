@@ -41,5 +41,38 @@ class ArucoDetector(Detector):
         pass
     pass
 class YoloDetector(Detector):
+    model_color=None
+    nodel_depth=None
+    color_on=True
+    depth_on=False
+    def setup(self):
+        self.model_color=YOLO("./models/best_color.pt")
+        self.model_depth=YOLO("./models/best_depth.pt")
+        print("YOLO setup")
+        pass
+    def update(self):
+        print("Yolo update")
+        if self.color_on:
+            print("Yolo 1")
+            color_smallMat=cv2.resize(self.cameraColorMat,None,fx=0.5,fy=0.5)
+            print("Yolo 2")
+            result_color=self.model_color.predict(color_smallMat)
+            print("Yolo 3")
+            result_color_boxes=result_color[0].boxes.numpy()
+            print("Yolo 4")
+            self.yoloResult[0]=deepcopy(result_color_boxes)
+            
+            print("in YOLO",self.yoloResult)
+            pass
+        if self.depth_on:
+            depth_gray = (self.cameraDepthMat/256).astype('uint8')
+            depth_gray=cv2.cvtColor(depth_gray,cv2.COLOR_GRAY2RGB)
+            depth_gray_small=cv2.resize(depth_gray,None,fx=0.5,fy=0.5)
+            result_depth=self.model_depth(depth_gray_small)
+            result_depth_boxes=result_depth[0].boxes.numpy()
+            self.yoloResult[1]=deepcopy(result_depth_boxes)
+            pass
+
+        pass
     pass
 

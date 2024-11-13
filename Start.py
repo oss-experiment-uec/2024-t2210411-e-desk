@@ -73,13 +73,16 @@ class Main:
         
     def initDetector(self):
         manager=Manager()
+        #[color,depth]
         self.yoloResult=manager.list()
+        #[corners,ids]
         self.arucoResult=manager.list()
         self.arucoResult.append(None)
         self.arucoResult.append(None)
+        self.yoloResult.append(None)
+        self.yoloResult.append(None)
         self.aruco=ArucoDetector()
         self.yolo=YoloDetector()
-        
         pass
     def setup(self):
         self.c=Constants()

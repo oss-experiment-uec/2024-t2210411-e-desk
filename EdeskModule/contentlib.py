@@ -1,12 +1,22 @@
 import cv2
-
+from EdeskModule.sharedObject import Constants,MyProcess
+import numpy as np
+from time import perf_counter
 #コンテンツクラス
-class Contents:
+class Content:
+    c=None
+    frame=None
+    id=None
+    corner_before=None #射影変換の4点
+    corner_after=None  #射影変換の4点
+    width=0
+    height=0
+    enable=False #投影中かどうか
+    waittime=0.0 #N秒マーカが見つからなかったらTimeout
+    mat_perspective=None
     def __init__(self):
-        self.x=0
-        self.y=0
-        self.w=0
-        self.h=0
+        self.c=Constants()
+        
         pass
     def update():
         pass
@@ -14,27 +24,84 @@ class Contents:
     def getType():
         print("Warning:content.getTypeが呼ばれています")
         return 0
-
-class Video(Contents):
+    def setEnable(self):
+        self.enable=True
+        self.waittime=0.0
+    def setDisable(self):
+        self.enable=False
+    def isEnable(self):
+        return self.enable
+    def getPerspectiveMat(self):
+        return cv2.getPerspectiveTransform(self.corner_before,self.corner_after)
+class Video(Content):
+    capture=None
+    prevtime=0
+    
+    def __init__(self,path,id):
+        super().__init__()
+        fullpath=self.c.contents_path+path
+        self.capture=cv2.VideoCapture(fullpath)
+        #if エラーチェック
+        if not self.capture.isOpened():
+            print("Cannot open Video:",fullpath)
+        self.id=id
+        self.width=self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.height=self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.corner_before=np.zeros((4,2), dtype='float32')
+        self.corner_after=np.zeros((4,2), dtype='float32')
+        self.corner_before[0]=np.array([0,0],dtype='float32')
+        self.corner_before[1]=np.array([self.width,0],dtype='float32')
+        self.corner_before[2]=np.array([self.width,self.height],dtype='float32')
+        self.corner_before[3]=np.array([0,self.height],dtype='float32')
+        print("content:",(id,self.width,self.height))
     def getType(self):
         return 1
+    def update(self):
+        ctime=perf_counter()
+        if ctime-self.prevtime>=1/300:
+            (ret,self.frame)=self.capture.read()
+            # print("content update",ctime-self.prevtime)
+            if not ret:
+                self.frame=np.zeros((100,100,3),dtype=np.uint8)
+            self.prevtime=ctime
+
     pass
-class Image(Contents):
+class Image(Content):
+    def __init__(self,path,id):
+        super().__init__()
+        fullpath=self.c.contents_path+path
+        self.frame=cv2.imread(fullpath)
+        self.id=id
+        self.width=self.frame.shape[1]
+        self.height=self.frame.shape[0]
+        self.corner_before=np.zeros((4,2), dtype='float32')
+        self.corner_after=np.zeros((4,2), dtype='float32')
+        self.corner_before[0]=np.array([0,0],dtype='float32')
+        self.corner_before[1]=np.array([self.width,0],dtype='float32')
+        self.corner_before[2]=np.array([self.width,self.height],dtype='float32')
+        self.corner_before[3]=np.array([0,self.height],dtype='float32')
+        print("content:",(id,self.width,self.height))
+
+        pass
     def getType(self):
         return 0
     pass
-
-class ContentManager:
-    N_CONTENTS=3
-    contentsType=[0,1,0]
-    contentsFile=["Meros.png","anime.webm","face.jpg"]
-    contentsArray=[]
     def setup(self):
-        for i in range(0,self.N_CONTENTS):
-            if self.contentsType==0:
-                self.contentsArray.append(Image(self.contentsFile[i]))
+
+        pass
+    def getFrame(self):
+        return self.frame
+class ContentManager:
+    c=None
+    contentsArray=[]
+    
+    def setup(self):
+        self.c=Constants()
+        for i in range(0,self.c.N_CONTENTS):
+            if self.c.contentsType[i]==0:
+                self.contentsArray.append(Image(self.c.contentsFile[i],i))
             else:
-                self.contentsArray.append(Video(self.contentsFile[i]))
+                self.contentsArray.append(Video(self.c.contentsFile[i],i))
         pass
     def update(self):
         # print("ContentManager:update")
