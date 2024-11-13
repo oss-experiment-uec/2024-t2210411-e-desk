@@ -44,7 +44,13 @@ class Canvas(MyProcess):
         #キャリブレーション処理
         arucoCorners=self.arucoResult[0]
         arucoIds=self.arucoResult[1]
+        print(arucoCorners)
+        print(arucoIds)
+        print("------")
         for i in range(0,len(arucoCorners)):
+            if arucoIds is None or len(arucoCorners)!=len(arucoIds):
+                print("arucoId is wrong")
+                break
             if arucoIds[i]//4==0:#キャリブレーション用の4隅
                 self.camera_corners[arucoIds[i]]=arucoCorners[i][0][0] #id番目の0個目のマーカーの左上
         
@@ -64,6 +70,9 @@ class Canvas(MyProcess):
                 content.setDisable()
         #見つかったマーカを処理
         for i in range(0,len(arucoCorners)):
+            if arucoIds is None or len(arucoCorners)!=len(arucoIds):
+                print("arucoId is wrong")
+                break
             if arucoIds[i]//4>0 and arucoIds[i]//4<=self.c.N_CONTENTS:
                 contentsid=arucoIds[i][0]//4-1
                 cornerid=arucoIds[i][0]%4 #左上左下右下右上のどれか

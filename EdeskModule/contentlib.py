@@ -60,7 +60,7 @@ class Video(Content):
         ctime=perf_counter()
         if ctime-self.prevtime>=1/300:
             (ret,self.frame)=self.capture.read()
-            # print("content update",ctime-self.prevtime)
+            # :print("content update",ctime-self.prevtime)
             if not ret:
                 self.frame=np.zeros((100,100,3),dtype=np.uint8)
             self.prevtime=ctime

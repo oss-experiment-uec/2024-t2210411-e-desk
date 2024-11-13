@@ -6,7 +6,7 @@ from cv2 import aruco
 import multiprocessing
 from EdeskModule.canvaslib import Canvas
 from EdeskModule.cameralib import Camera,RealSense,NormalCamera
-from EdeskModule.detectorlib import YoloDetector,ArucoDetector
+from EdeskModule.detectorlib import ArucoDetector,yoloColorProcessFunction
 from EdeskModule.contentlib import ContentManager
 from EdeskModule.sharedObject import Constants
 from multiprocessing import RawArray,Process,Manager
@@ -39,9 +39,10 @@ class Main:
     arucoResult=None
     yoloResult=None
     aruco=None
-    yolo=None
+    # yolo=None
     arucoProcess=None
-    yoloProcess=None
+    # yoloProcess=None
+    yoloColorProcess=None
     def __init__(self):
         self.setup()
         pass
@@ -77,12 +78,12 @@ class Main:
         self.yoloResult=manager.list()
         #[corners,ids]
         self.arucoResult=manager.list()
-        self.arucoResult.append(None)
-        self.arucoResult.append(None)
-        self.yoloResult.append(None)
-        self.yoloResult.append(None)
+        self.arucoResult.append([])
+        self.arucoResult.append([])
+        self.yoloResult.append([])
+        self.yoloResult.append([])
         self.aruco=ArucoDetector()
-        self.yolo=YoloDetector()
+        # self.yolo=YoloDetector()
         pass
     def setup(self):
         self.c=Constants()
@@ -94,9 +95,11 @@ class Main:
         self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.canvasProcess.start()
         self.arucoProcess=Process(target=self.aruco.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
-        self.yoloProcess=Process(target=self.yolo.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
+        # self.yoloProcess=Process(target=self.yolo.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.arucoProcess.start()
-        self.yoloProcess.start()
+        # self.yoloProcess.start()
+        self.yoloColorProcess=Process(target=yoloColorProcessFunction,args=[self.cameraColorBuffer,self.yoloResult])
+        self.yoloColorProcess.start()
         pass
     def update(self):
         colorVec=np.ctypeslib.as_array(self.cameraColorBuffer)
