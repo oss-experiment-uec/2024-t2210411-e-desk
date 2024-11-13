@@ -13,10 +13,10 @@ class Constants:
     camera_length=camera_width*camera_height*3
 
     projector_padding=80
-    # projector_width=1920
-    # projector_height=1000
-    projector_width=1000
-    projector_height=600
+    projector_width=1920
+    projector_height=1000
+    # projector_width=1000
+    # projector_height=600
     
     projector_length=projector_height*projector_width*3
 

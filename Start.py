@@ -47,7 +47,8 @@ class Main:
         self.setup()
         pass
     def initCamera(self):
-        self.camera=NormalCamera()
+        self.camera=RealSense()
+        # self.camera=NormalCamera()
 
         #Camera用Bufferの作成
         cmat=np.zeros((self.c.camera_height,self.c.camera_width,3),dtype=np.uint8)
@@ -80,8 +81,8 @@ class Main:
         self.arucoResult=manager.list()
         self.arucoResult.append([])
         self.arucoResult.append([])
-        self.yoloResult.append([])
-        self.yoloResult.append([])
+        self.yoloResult.append(None)
+        self.yoloResult.append(None)
         self.aruco=ArucoDetector()
         # self.yolo=YoloDetector()
         pass

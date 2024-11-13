@@ -84,15 +84,9 @@ def yoloColorProcessFunction(cameraColorBuffer,yoloResult:list):
     cameraColorMat=cvec.reshape(c.camera_height,c.camera_width,3)
 
     while True:
-        print("Yolo 11")
         color_smallMat=cv2.resize(cameraColorMat,None,fx=0.5,fy=0.5)
-        print("Yolo 22")
         result_color=model_color(color_smallMat)
-        print("Yolo 33")
         result_color_boxes=result_color[0].boxes.numpy()
-        print("Yolo 44")
-        yoloResult[0]=deepcopy(result_color_boxes)
-        
-        print("in YOLO",yoloResult)
+        yoloResult[0]=deepcopy(result_color_boxes)        
         pass
     pass

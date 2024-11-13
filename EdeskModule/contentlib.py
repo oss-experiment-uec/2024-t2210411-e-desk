@@ -62,7 +62,8 @@ class Video(Content):
             (ret,self.frame)=self.capture.read()
             # :print("content update",ctime-self.prevtime)
             if not ret:
-                self.frame=np.zeros((100,100,3),dtype=np.uint8)
+                self.capture.set(cv2.CAP_PROP_POS_FRAMES,0)
+                ret,self.frame=self.capture.read()
             self.prevtime=ctime
 
     pass

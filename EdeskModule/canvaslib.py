@@ -101,11 +101,24 @@ class Canvas(MyProcess):
                 # cv2.imshow("content",content.frame)
 
             pass
+
+        #Yolo
+        if self.yoloResult[0] is not None:
+            result_color_boxes=self.yoloResult[0]
+            for i in range(0,len(result_color_boxes.cls)):
+                cls=result_color_boxes.cls[i]
+                xyxy=result_color_boxes.xyxy[i]
+                xy1_after=cv2.perspectiveTransform(np.array([[(xyxy[0]*2,xyxy[1]*2)]]),mat_camera2canvas)
+                xy2_after=cv2.perspectiveTransform(np.array([[(xyxy[2]*2,xyxy[3]*2)]]),mat_camera2canvas)
+                if cls==1:
+                    mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
+                    my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
+                    cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3)        
+                    # cv2.circle(canvas,(int(mx),int(my)),20,(0,0,200),thickness=-1)
+                else:
+                    cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
+            
         cv2.imshow("Canvas",self.canvasMat)
-        cv2.waitKey(1)
-        # print(self.yoloResult)
-        # self.canvasMat[:,:,2]+=1
-        # self.canvasMat[:,:,2]%=200
 
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
