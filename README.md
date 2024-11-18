@@ -1,6 +1,11 @@
 # e-desk
 Practice of OpenCV and Machine Learning
 
+2024/11/5ぐらい
+
+大きく書き直し
+=======
+
 ## 環境
 
 Python 3.8~3.11 (3.8と3.11で動作確認)
