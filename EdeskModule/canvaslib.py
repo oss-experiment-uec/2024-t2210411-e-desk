@@ -21,6 +21,13 @@ class Canvas(MyProcess):
         self.canvas_corners=np.array([[0,0],[self.c.canvas_width,0],[self.c.canvas_width,self.c.canvas_height],[0,self.c.canvas_height]],dtype='float32')
 
         pass
+    def initWindow(self):
+        cv2.namedWindow('Projector',cv2.WINDOW_FULLSCREEN)
+        cv2.imshow('Projector',self.projectingMat)
+        cv2.moveWindow('Projector',0,0)
+        cv2.resizeWindow('Projector',self.c.projector_width,self.c.projector_height)
+        cv2.setMouseCallback('Projector',self.onProjectorClicked)
+        pass
     def setup(self):
         self.contentManager=ContentManager()
         self.contentManager.setup()
@@ -31,12 +38,8 @@ class Canvas(MyProcess):
         self.projectingMat[:,self.projector_width-self.projector_padding+1,2]=255
         
         #プロジェクタ用ウィンドウの初期化
-        cv2.namedWindow('Projector',cv2.WINDOW_FULLSCREEN)
-        cv2.imshow('Projector',self.projectingMat)
-        cv2.moveWindow('Projector',0,0)
-        cv2.resizeWindow('Projector',self.c.projector_width,self.c.projector_height)
-        cv2.setMouseCallback('Projector',self.onProjectorClicked)
-
+        self.initWindow()
+        
         self.prevUpdatetime=perf_counter()
         pass
     def update(self):
@@ -85,6 +88,7 @@ class Canvas(MyProcess):
         #各コンテンツの重ね合わせ
         self.canvasMat[:,:,:]=0
         for content in contents:
+            #Videoであれば映像を更新
             if content.getType()==self.c.videoType:
                 content.update()
             if content.enable:
@@ -96,10 +100,6 @@ class Canvas(MyProcess):
                 np.copyto(self.canvasMat,cv2.bitwise_and(self.canvasMat,self.canvasMat,mask=mask_inv))
                 content_masked=cv2.bitwise_and(content_frame,content_frame,mask=mask)
                 np.copyto(self.canvasMat,cv2.add(self.canvasMat,content_masked))
-                # print("add:",content.id)
-                # cv2.imshow("frame",content_frame)
-                # cv2.imshow("content",content.frame)
-
             pass
 
         #Yolo
@@ -114,7 +114,6 @@ class Canvas(MyProcess):
                     mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
                     my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
                     cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3)        
-                    # cv2.circle(canvas,(int(mx),int(my)),20,(0,0,200),thickness=-1)
                 else:
                     cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
             
@@ -123,12 +122,11 @@ class Canvas(MyProcess):
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
         cv2.waitKey(1)
-        # print("Canvas.Update")
         self.prevUpdatetime=perf_counter()
         pass
 
 
-    #プロジェクタの位置にウィンドウを移動
+    #クリックしたらプロジェクタの位置にウィンドウを移動
     def onProjectorClicked(self,event,x,y,flag,param):
         if event==cv2.EVENT_LBUTTONDOWN:
             cv2.moveWindow('Projector',0,0)
