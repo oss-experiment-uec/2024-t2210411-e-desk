@@ -89,8 +89,8 @@ class Canvas(MyProcess):
         self.canvasMat[:,:,:]=0
         for content in contents:
             #Videoであれば映像を更新
-            if content.getType()==self.c.videoType:
-                content.update()
+            # if content.getType()==self.c.videoType:
+            #     content.update()
             if content.enable:
                 content_mat=content.getPerspectiveMat()
                 content_frame=cv2.warpPerspective(content.frame, content_mat,(self.c.canvas_width,self.c.canvas_height))

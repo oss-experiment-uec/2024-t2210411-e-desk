@@ -2,6 +2,8 @@ import cv2
 from EdeskModule.sharedObject import Constants,MyProcess
 import numpy as np
 from time import perf_counter
+from multiprocessing import Process,RawArray
+import ctypes
 #コンテンツクラス
 class Content:
     c=None
@@ -36,17 +38,20 @@ class Content:
 class Video(Content):
     capture=None
     prevtime=0
-    
+    pProcess=None
+    VideoBuffer=None
+    vmat=None
+    fullpath=None
     def __init__(self,path,id):
         super().__init__()
-        fullpath=self.c.contents_path+path
-        self.capture=cv2.VideoCapture(fullpath)
+        self.fullpath=self.c.contents_path+path
+        self.capture=cv2.VideoCapture(self.fullpath)
         #if エラーチェック
         if not self.capture.isOpened():
-            print("Cannot open Video:",fullpath)
+            print("Cannot open Video:",self.fullpath)
         self.id=id
-        self.width=self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.height=self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.width=int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height=int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.corner_before=np.zeros((4,2), dtype='float32')
         self.corner_after=np.zeros((4,2), dtype='float32')
         self.corner_before[0]=np.array([0,0],dtype='float32')
@@ -54,18 +59,50 @@ class Video(Content):
         self.corner_before[2]=np.array([self.width,self.height],dtype='float32')
         self.corner_before[3]=np.array([0,self.height],dtype='float32')
         print("content:",(id,self.width,self.height))
+        self.capture.release()
+        #Video用Bufferの作成
+        vmat=np.zeros((self.height,self.width,3),dtype=np.uint8)
+        vlength=self.width*self.height*3
+        ctypesVideoBuffer=vmat.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8*vlength)).contents
+        
+        self.VideoBuffer=RawArray('B',ctypesVideoBuffer)
+        
+        self.pProcess=Process(target=self.process,args=[self.VideoBuffer])
+        self.pProcess.start()
     def getType(self):
         return 1
     def update(self):
+        #共有メモリからframeへコピー
+        np.copyto(self.frame,self.vmat)
+        pass
+    def processSetup(self,cap):
+        pass
+    def processUpdate(self,cap,videoMat,prevtime):
         ctime=perf_counter()
-        if ctime-self.prevtime>=1/300:
-            (ret,self.frame)=self.capture.read()
+        if ctime-prevtime>=1/23:
+            (ret,mat)=cap.read()
+            np.copyto(videoMat,mat)
+            cv2.imshow("video",videoMat)
+            cv2.waitKey(1)
             # :print("content update",ctime-self.prevtime)
             if not ret:
-                self.capture.set(cv2.CAP_PROP_POS_FRAMES,0)
-                ret,self.frame=self.capture.read()
-            self.prevtime=ctime
-
+                cap.set(cv2.CAP_PROP_POS_FRAMES,0)
+                ret,mat=cap.read()
+                np.copyto(videoMat,mat)
+            return perf_counter()
+        return prevtime
+    def process(self,videoBuffer):
+        cvec=np.ctypeslib.as_array(videoBuffer)
+        videoMat=cvec.reshape(self.height,self.width,3)
+        cap=cv2.VideoCapture(self.fullpath)
+        #if エラーチェック
+        if not cap.isOpened():
+            print("Cannot open Video in SubProcess:",self.fullpath)
+        self.processSetup(cap)
+        prevtime=0
+        while True:
+            prevtime=self.processUpdate(cap,videoMat,prevtime)
+        pass
     pass
 class Image(Content):
     def __init__(self,path,id):
