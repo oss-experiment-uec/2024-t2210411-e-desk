@@ -122,9 +122,9 @@ class Canvas(MyProcess):
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
         key=cv2.waitKey(1)
-        print(key)
-        if key==99 and self.prevkey != 99:
-            self.yoloResult[2]=not self.yoloResult[2]
+        # print(key)
+        # if key==99 and self.prevkey != 99:
+        #     self.yoloResult[2]=not self.yoloResult[2]
         #ここにelifでつなげてkey
         self.prevUpdatetime=perf_counter()
         self.prevkey=key
@@ -137,3 +137,4 @@ class Canvas(MyProcess):
             cv2.moveWindow('Projector',0,0)
             cv2.resizeWindow('Projector',self.projector_width,self.projector_height)
             print('clicked Projector Window')
+            self.yoloResult[2]=not self.yoloResult[2]
