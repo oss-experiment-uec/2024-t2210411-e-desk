@@ -94,7 +94,7 @@ class Image(Content):
     def getFrame(self):
         return self.frame
 
-class VariableImage(Image):
+class VariableImage(Content):
     image1 = None
     image2 = None
     current_is_1 = True
