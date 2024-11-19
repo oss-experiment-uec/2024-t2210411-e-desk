@@ -117,6 +117,7 @@ class Canvas(MyProcess):
                 xy1_after=cv2.perspectiveTransform(np.array([[(xyxy[0]*2,xyxy[1]*2)]]),mat_camera2canvas)
                 xy2_after=cv2.perspectiveTransform(np.array([[(xyxy[2]*2,xyxy[3]*2)]]),mat_camera2canvas)
                 if cls==1:
+                    self.prevYoloCls=1
                     # mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
                     # my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
                     # cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3) 
@@ -126,7 +127,7 @@ class Canvas(MyProcess):
                 elif cls==2:
                     if self.prevYoloCls==0:
                         self.contentManager.changeImage()
-
+                    self.prevYoloCls=2
                 cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),self.c.result_boxcolors[int(cls)],thickness=5)
             if noHand: #一定フレーム間noHandだったときの処理
                 self.noHandFrame+=1
