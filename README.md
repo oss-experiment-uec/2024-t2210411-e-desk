@@ -27,6 +27,5 @@ python3 Start.py
 ## e-desk
 Practice of OpenCV and Machine Learning
 
-2024/11/5ぐらい
-
+もともとはOpenCVの練習用に作成したもの
 
