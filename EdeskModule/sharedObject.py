@@ -28,14 +28,14 @@ class Constants:
 
 
     N_CONTENTS=3
-    contentsType=[1,2,0,0]#0:Image, 1:Video
+    contentsType=[0,2,0,0]#0:Image, 1:Video
     videoType=1
     imageType=0
     changableImageType=2
-    contentsFile=["middle.mp4","Dummy","Meros.png","face.jpg"]
+    contentsFile=["ScienceTokyo.png","Dummy","UEC.png","face.jpg"]
     contents_path="./contents/"
 
-    changeImageFile=["ScienceTokyo.png","UEC.png"]
+    changeImageFile=["Smark.jpg","Tsubame.png"]
     
     result_boxcolors=[(255,0,0),(0,255,0),(0,0,255)]
 
