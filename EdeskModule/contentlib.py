@@ -67,6 +67,7 @@ class Video(Content):
             self.prevtime=ctime
 
     pass
+
 class Image(Content):
     def __init__(self,path,id):
         super().__init__()
@@ -92,6 +93,50 @@ class Image(Content):
         pass
     def getFrame(self):
         return self.frame
+
+class VariableImage(Image):
+    image1 = None
+    image2 = None
+    current_is_1 = True
+    def __init__(self, path1, path2, id):
+        super().__init__()
+        fullpath1=self.c.contents_path+path1
+        fullpath2=self.c.contents_path+path2
+        self.image1=cv2.imread(fullpath1)
+        self.image2=cv2.imread(fullpath2)
+        self.id=id
+        self.width=self.image1.shape[1]
+        self.height=self.image1.shape[0]
+        self.corner_before=np.zeros((4,2), dtype='float32')
+        self.corner_after=np.zeros((4,2), dtype='float32')
+        self.corner_before[0]=np.array([0,0],dtype='float32')
+        self.corner_before[1]=np.array([self.width,0],dtype='float32')
+        self.corner_before[2]=np.array([self.width,self.height],dtype='float32')
+        self.corner_before[3]=np.array([0,self.height],dtype='float32')
+        print("content:",(id,self.width,self.height))
+        self.image2 = cv2.resize(self.image2, (self.width, self.height))
+        self.frame=self.image1
+        pass
+    def getType(self):
+        return 0
+    pass
+
+    def setup(self):
+
+        pass
+
+    def changeframe(self):
+        if self.current_is_1:
+            self.frame = self.image2
+            self.current_is_1=False
+        else: 
+            self.frame = self.image1
+            self.current_is_1=True
+        pass
+    
+    def getframe(self):
+        return self.frame
+
 class ContentManager:
     c=None
     contentsArray=[]
