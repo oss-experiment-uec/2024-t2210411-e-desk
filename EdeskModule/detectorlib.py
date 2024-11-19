@@ -6,6 +6,7 @@ from ultralytics import YOLO
 import numpy as np
 from copy import deepcopy
 from EdeskModule.sharedObject import MyProcess,Constants
+import time
 class Detector(MyProcess):
     c=None
     def __init__(self):
@@ -84,6 +85,9 @@ def yoloColorProcessFunction(cameraColorBuffer,yoloResult:list):
     cameraColorMat=cvec.reshape(c.camera_height,c.camera_width,3)
 
     while True:
+        if yoloResult[2] is False:
+            time.sleep(1)
+            continue
         color_smallMat=cv2.resize(cameraColorMat,None,fx=0.5,fy=0.5)
         result_color=model_color(color_smallMat)
         result_color_boxes=result_color[0].boxes.numpy()

@@ -83,6 +83,7 @@ class Main:
         self.arucoResult.append([])
         self.yoloResult.append(None)
         self.yoloResult.append(None)
+        self.yoloResult.append(True)
         self.aruco=ArucoDetector()
         # self.yolo=YoloDetector()
         pass
@@ -109,11 +110,14 @@ class Main:
         cameraDepthMat=depthVec.reshape(self.c.camera_height,self.c.camera_width,3)
         
         if self.c.DEBUG:
-            cv2.imshow("color",cameraColorMat)
-            cv2.imshow("depth",cameraDepthMat)
-            cv2.waitKey(1)
+            # cv2.imshow("color",cameraColorMat)
+            # cv2.imshow("depth",cameraDepthMat)
+            # cv2.waitKey(1)
             # print("ArucoResult",self.arucoResult)
-        pass
+            pass
+        key=cv2.waitKey(1)
+        if key==99:
+            self.yoloResult[2]=not self.yoloResult[2]
     pass
 
 

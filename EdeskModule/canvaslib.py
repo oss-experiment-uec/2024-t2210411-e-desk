@@ -114,8 +114,7 @@ class Canvas(MyProcess):
                     mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
                     my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
                     cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3)        
-                else:
-                    cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),(255,0,0),thickness=5)
+                cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),self.c.result_boxcolors[int(cls)],thickness=5)
             
         cv2.imshow("Canvas",self.canvasMat)
 
