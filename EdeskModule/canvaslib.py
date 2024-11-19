@@ -120,7 +120,10 @@ class Canvas(MyProcess):
 
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
-        cv2.waitKey(1)
+        key=cv2.waitKey(1)
+        if key==99:
+            self.yoloResult[2]=not self.yoloResult[2]
+        #ここにelifでつなげてkey
         self.prevUpdatetime=perf_counter()
         pass
 

@@ -115,9 +115,8 @@ class Main:
             # cv2.waitKey(1)
             # print("ArucoResult",self.arucoResult)
             pass
-        key=cv2.waitKey(1)
-        if key==99:
-            self.yoloResult[2]=not self.yoloResult[2]
+        # key=cv2.waitKey(1)
+        
     pass
 
 
