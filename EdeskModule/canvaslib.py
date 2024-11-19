@@ -14,6 +14,7 @@ class Canvas(MyProcess):
     contentManager=None
     detector=None
     prevUpdatetime=0.0
+    prevkey=0
     def __init__(self):
         self.c=Constants()
         #射影変換用の対応する4点．ARマーカの位置で適宜更新
@@ -121,10 +122,12 @@ class Canvas(MyProcess):
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
         cv2.imshow("Projector",self.projectingMat)
         key=cv2.waitKey(1)
-        if key==99:
+        print(key)
+        if key==99 and self.prevkey != 99:
             self.yoloResult[2]=not self.yoloResult[2]
         #ここにelifでつなげてkey
         self.prevUpdatetime=perf_counter()
+        self.prevkey=key
         pass
 
 
