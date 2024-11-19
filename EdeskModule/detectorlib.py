@@ -79,7 +79,7 @@ class ArucoDetector(Detector):
 
 def yoloColorProcessFunction(cameraColorBuffer,yoloResult:list):
     c=Constants()
-    model_color=YOLO("./models/best_11n.pt")
+    model_color=YOLO("./models/best_8n.pt")
     color_on=True
     cvec=np.ctypeslib.as_array(cameraColorBuffer)
     cameraColorMat=cvec.reshape(c.camera_height,c.camera_width,3)
