@@ -118,7 +118,7 @@ class VariableImage(Image):
         self.frame=self.image1
         pass
     def getType(self):
-        return 0
+        return 2
     pass
 
     def setup(self):
@@ -139,18 +139,25 @@ class VariableImage(Image):
 
 class ContentManager:
     c=None
-    contentsArray=[]
+    contentsArray:list[Content]=[]
     
     def setup(self):
         self.c=Constants()
         for i in range(0,self.c.N_CONTENTS):
             if self.c.contentsType[i]==0:
                 self.contentsArray.append(Image(self.c.contentsFile[i],i))
-            else:
+            elif self.c.contentsType[i]==1: #video
                 self.contentsArray.append(Video(self.c.contentsFile[i],i))
+            elif self.c.contentsType[i]==2: #changableImage
+                self.contentsArray.append(VariableImage(self.c.changeImageFile[0],self.c.changeImageFile[1],i))
         pass
     def update(self):
         pass
     pass
     def getContents(self):
         return self.contentsArray
+    def changeImage(self):
+        for content in self.contentsArray:
+            if content.getType()==2:
+                content.changeframe()
+        pass

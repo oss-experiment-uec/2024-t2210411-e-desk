@@ -15,6 +15,9 @@ class Canvas(MyProcess):
     detector=None
     prevUpdatetime=0.0
     prevkey=0
+    prevYoloCls=-1
+    noHandFrame=0
+    noHandTimeout=5
     def __init__(self):
         self.c=Constants()
         #射影変換用の対応する4点．ARマーカの位置で適宜更新
@@ -106,17 +109,30 @@ class Canvas(MyProcess):
         #Yolo
         if self.yoloResult[0] is not None:
             result_color_boxes=self.yoloResult[0]
+            noHand=True
             for i in range(0,len(result_color_boxes.cls)):
+                noHand=False
                 cls=result_color_boxes.cls[i]
                 xyxy=result_color_boxes.xyxy[i]
                 xy1_after=cv2.perspectiveTransform(np.array([[(xyxy[0]*2,xyxy[1]*2)]]),mat_camera2canvas)
                 xy2_after=cv2.perspectiveTransform(np.array([[(xyxy[2]*2,xyxy[3]*2)]]),mat_camera2canvas)
                 if cls==1:
-                    mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
-                    my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
-                    cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3)        
+                    # mx=(xy1_after[0][0][0]+xy2_after[0][0][0])/2        
+                    # my=(xy1_after[0][0][1]+xy2_after[0][0][1])/2
+                    # cv2.putText(self.canvasMat,"C",(int(mx),int(my)),cv2.FONT_HERSHEY_COMPLEX,2.0,(0,0,255),thickness=3) 
+                    pass
+                elif cls==0:
+                    self.prevYoloCls=0
+                elif cls==2:
+                    if self.prevYoloCls==0:
+                        self.contentManager.changeImage()
+
                 cv2.rectangle(self.canvasMat,(int(xy1_after[0][0][0]),int(xy1_after[0][0][1])),(int(xy2_after[0][0][0]),int(xy2_after[0][0][1])),self.c.result_boxcolors[int(cls)],thickness=5)
-            
+            if noHand: #一定フレーム間noHandだったときの処理
+                self.noHandFrame+=1
+                if self.noHandFrame>=self.noHandTimeout:
+                    self.prevYoloCls=-1
+
         cv2.imshow("Canvas",self.canvasMat)
 
         self.projectingMat[self.c.projector_padding:self.c.projector_height-self.c.projector_padding,self.c.projector_padding:self.c.projector_width-self.c.projector_padding]=self.canvasMat
