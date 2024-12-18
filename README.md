@@ -29,3 +29,5 @@ Practice of OpenCV and Machine Learning
 
 もともとはOpenCVの練習用に作成したもの
 
+## テスト用Docker環境 
+https://github.com/users/watson9109/packages/container/package/e-desk
