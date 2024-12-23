@@ -16,8 +16,7 @@
 
 ```
 docker pull ghcr.io/oss-experiment-uec/2024-t2201411-e-desk
-docker run -it --rm --name oss-experiment-uec/2024-t2201411-e-desk
-python3 ./Start.py
+docker run --rm e-desk:latest python3 Start.py
 ```
 
 ## 評価手順
