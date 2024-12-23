@@ -1,6 +1,22 @@
+# OSS改変としての目標
+# * プロジェクターの無い状態での動作を確かめられるようにする．
+#   * 具体的にはノートPC一体のカメラ+projectorウィンドウ
+#   * 何か変数を渡すとシミュレーションモードで立ち上がる．
+#   * projectorウィンドウにカメラ映像を渡す．
+#      * テーブル用ARマーカは紙に刷ってｋもらう?
+#      * 各端に付与した状態にするのもあり． 
+#   * あと，YOLOのモデルの作り直しとかもする?
+# * なんか新しい機能ほしい．
+#   * 
+# * できるならRustとかC++で書き直すとかしてもいいかも．
+# * 
+## 最悪何か評価ができるという状況まで持っていければOK．
+# * コンソール動作を前提に何かoutputするとか．
+
 #これが新しいメイン
 #python3 Start.pyで実行
 import numpy as np
+import sys
 import cv2
 from cv2 import aruco
 import multiprocessing
@@ -12,6 +28,7 @@ from EdeskModule.sharedObject import Constants
 from multiprocessing import RawArray,Process,Manager
 from time import perf_counter
 import ctypes
+import argparse
 
 class Main:
 
@@ -47,7 +64,7 @@ class Main:
         self.setup()
         pass
     def initCamera(self):
-        self.camera=RealSense()
+        self.camera=NormalCamera()
         # self.camera=NormalCamera()
 
         #Camera用Bufferの作成
@@ -116,17 +133,26 @@ class Main:
             # print("ArucoResult",self.arucoResult)
             pass
         # key=cv2.waitKey(1)
-        
+
+    # -h, --NonProjector, --webCamera, --integratedCamera, --RealSense
+    def argdetect(args):
+        if args[1]=="-h":
     pass
+
+    
 
 
 
 if __name__ == "__main__":
     main=Main()
 
-    while True:
-        stime=perf_counter()
-        main.update()
-        etime=perf_counter()
-        # print("Main time:",etime-stime)
-    pass
+    args = sys.argv
+    main.argdetect(args)
+
+    if()
+        while True:
+            stime=perf_counter()
+            main.update()
+            etime=perf_counter()
+            # print("Main time:",etime-stime)
+        pass

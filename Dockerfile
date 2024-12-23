@@ -18,4 +18,4 @@ RUN apt-get install -y locales
 RUN echo "ja_JP UTF-8" > /etc/locale.gen
 RUN locale-gen
 
-CMD [ "StartEDesk", "./Start.py" ]
+#CMD [ "./Start.py" ]
