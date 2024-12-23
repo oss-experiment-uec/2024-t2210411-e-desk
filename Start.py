@@ -149,7 +149,7 @@ if __name__ == "__main__":
     args = sys.argv
     main.argdetect(args)
 
-    if()
+    if(aaa)
         while True:
             stime=perf_counter()
             main.update()
