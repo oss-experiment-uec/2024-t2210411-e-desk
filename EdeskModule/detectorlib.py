@@ -36,7 +36,7 @@ class ArucoDetector(Detector):
             # self.colorMat[100:200,100:150,0]=255
             mat=np.copy(self.cameraColorMat)
             aruco.drawDetectedMarkers(mat,corners,ids)
-            cv2.imshow("Aruco",mat)
+            cv2.imwrite("Aruco.png",mat)
             cv2.waitKey(1)
             # print("Aruco Update Done!!!",corners)
         pass

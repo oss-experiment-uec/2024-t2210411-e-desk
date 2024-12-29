@@ -177,7 +177,7 @@ class VirtualCanvas(MyProcess):
         pass
     def initWindow(self):
         # cv2.namedWindow('Projector',cv2.WINDOW_FULLSCREEN)
-        # cv2.imshow('Projector',self.projectingMat)
+        # cv2.imwrite("VirtualEProjector.png",self.projectingMat)
         # cv2.moveWindow('Projector',0,0)
         # cv2.resizeWindow('Projector',self.c.projector_width,self.c.projector_height)
         # cv2.setMouseCallback('Projector',self.onProjectorClicked)
