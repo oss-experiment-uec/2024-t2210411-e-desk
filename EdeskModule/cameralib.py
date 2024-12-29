@@ -89,6 +89,35 @@ class RealSense(Camera):
         # cv2.imshow("cameralib",self.cameraColorMat)
         # cv2.waitKey(1)
 
+class VirtualCamera(Camera):
+    capture=None
+    def connect(self):
+        self.capture=cv2.VideoCapture('VirtualDesk.png')
+        if self.capture.isOpened():
+            print("Success to open virtual camera!!!")
+        else:
+            print("Failed to open virtual camera...")
+        pass
+    def disconnect(self):
+        pass
+    def update(self):
+        (ret,frame)=self.capture.read()
+        if ret:
+            # print("NormalCamera.Update:Get Data!!!")
+            self.color_image=cv2.resize(frame,(self.c.camera_width,self.c.camera_height))
+            self.depth_image=self.color_image
+
+            self.write2Buffer()
+            pass
+        else:
+            # print("NormalCamera.Update:No data")
+            pass
+    def write2Buffer(self):
+        np.copyto(self.cameraColorMat,self.color_image)
+        np.copyto(self.cameraDepthMat,self.depth_image)
+        pass
+
+
 class NormalCamera(Camera):
     capture=None
     def connect(self):

@@ -1,5 +1,8 @@
+numpy
 ultralytics==8.3.49
 torch==2.3.0
 pyrealsense2==2.55.1.6486
 opencv-python==4.10.0.84
 opencv-contrib-python==4.10.0.84
+streamlit==1.41.1
+streamlit-webrtc==0.47.9
