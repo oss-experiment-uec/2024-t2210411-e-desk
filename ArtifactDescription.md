@@ -1,8 +1,9 @@
 # Artifact Description
 
-## 概要：e-desk
+**クレジット**：
+* [鈴木謙太郎](https://github.com/sushichan044)さん，有益なピアレビューを下さりありがとうございました．
 
-以下，記述事項の説明．
+## 概要：e-desk
 
 * 改変対象OSS:[e-desk](https://github.com/ryusuke-m/e-desk)
   + プロジェクターとカメラ(webカメラもしくは深度カメラ)を用いたプロジェクションアプリ
