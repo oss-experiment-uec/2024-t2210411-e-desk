@@ -2,6 +2,7 @@ import cv2
 from cv2 import aruco
 import multiprocessing
 import numpy as np
+import signal 
 from time import perf_counter
 #どのプロセスでも共有したいデータをここに列挙
 #ただし定数だけにすること
@@ -48,7 +49,7 @@ class MyProcess(Constants):
     arucoResult=None
     canvasMat=None
     projectingMat=None
-    def process(self,canvasBuffer,projectingBuffer,cameraColorBuffer,cameraDepthBuffer,arucoResult,yoloResult):
+    def process(self,canvasBuffer,projectingBuffer,cameraColorBuffer,cameraDepthBuffer,arucoResult,yoloResult,stop_flag):
         #ここに引数のarrayとフィールドのmatの関連付け処理を入れる
         cvec=np.ctypeslib.as_array(canvasBuffer)
         self.canvasMat=cvec.reshape(self.canvas_height,self.canvas_width,3)
@@ -64,9 +65,14 @@ class MyProcess(Constants):
 
         self.yoloResult=yoloResult
         self.arucoResult=arucoResult
-        
+    
+        signal.signal(signal.SIGINT,  signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
         self.setup()
         while True:
+            if stop_flag.is_set() :
+                break
             # stime=perf_counter()
             self.update()
             # etime=perf_counter()

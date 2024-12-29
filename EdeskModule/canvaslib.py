@@ -1,6 +1,7 @@
 # 描画するキャンバスを管理
 import cv2,ctypes
 import numpy as np
+import signal
 from time import perf_counter
 from EdeskModule.contentlib import ContentManager,Content
 from EdeskModule.detectorlib import Detector

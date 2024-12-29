@@ -7,6 +7,8 @@ import numpy as np
 from copy import deepcopy
 from EdeskModule.sharedObject import MyProcess,Constants
 import time
+import signal
+
 class Detector(MyProcess):
     c=None
     def __init__(self):
@@ -28,7 +30,7 @@ class ArucoDetector(Detector):
         # print("Aruco Setup Done!!!")
         pass
     def update(self):
-        # detect AR markers
+        # detect AR marker
         corners, ids, rejectedImgPoints = self.detector.detectMarkers(self.cameraColorMat)
         self.arucoResult[0]=deepcopy(corners)
         self.arucoResult[1]=deepcopy(ids)
@@ -77,14 +79,19 @@ class ArucoDetector(Detector):
 #         pass
 #     pass
 
-def yoloColorProcessFunction(cameraColorBuffer,yoloResult:list):
+def yoloColorProcessFunction(cameraColorBuffer,yoloResult:list,stop_flag):
     c=Constants()
     model_color=YOLO("./models/best_8n.pt")
     color_on=True
     cvec=np.ctypeslib.as_array(cameraColorBuffer)
     cameraColorMat=cvec.reshape(c.camera_height,c.camera_width,3)
 
+    signal.signal(signal.SIGINT,  signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
     while True:
+        if stop_flag.is_set() :
+            break
         if yoloResult[2] is False:
             time.sleep(1)
             continue

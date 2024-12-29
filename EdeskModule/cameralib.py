@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from time import perf_counter
 import ctypes
+import signal
 from EdeskModule.sharedObject import Constants,MyProcess
 # from multiprocessing import RawArray
 class Camera(MyProcess):

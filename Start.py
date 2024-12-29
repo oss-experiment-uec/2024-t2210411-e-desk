@@ -28,8 +28,9 @@ from EdeskModule.cameralib import Camera,RealSense,NormalCamera, VirtualCamera
 from EdeskModule.detectorlib import ArucoDetector,yoloColorProcessFunction
 from EdeskModule.contentlib import ContentManager
 from EdeskModule.sharedObject import Constants
-from multiprocessing import RawArray,Process,Manager
-from time import perf_counter
+from multiprocessing import RawArray,Process,Manager,Event
+import signal
+from time import perf_counter,sleep
 import ctypes
 import argparse
 
@@ -216,15 +217,15 @@ class SimMain:
         self.initCamera()
         self.initCanvas()
         self.initDetector()
-        self.cameraProcess=Process(target=self.camera.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
+        self.cameraProcess=Process(target=self.camera.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult,stop_flag])
         self.cameraProcess.start()
-        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
+        self.canvasProcess=Process(target=self.canvas.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult,stop_flag])
         self.canvasProcess.start()
-        self.arucoProcess=Process(target=self.aruco.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
+        self.arucoProcess=Process(target=self.aruco.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult,stop_flag])
         # self.yoloProcess=Process(target=self.yolo.process,args=[self.canvasBuffer,self.projectingBuffer,self.cameraColorBuffer,self.cameraDepthBuffer,self.arucoResult,self.yoloResult])
         self.arucoProcess.start()
         # self.yoloProcess.start()
-        self.yoloColorProcess=Process(target=yoloColorProcessFunction,args=[self.cameraColorBuffer,self.yoloResult])
+        self.yoloColorProcess=Process(target=yoloColorProcessFunction,args=[self.cameraColorBuffer,self.yoloResult,stop_flag])
         self.yoloColorProcess.start()
         pass
     def update(self):
@@ -241,7 +242,17 @@ class SimMain:
             pass
         # key=cv2.waitKey(1)
 
+def signalHandler(signal, handler) :
+        stop_flag.set()
+
+
 if __name__ == "__main__":
+    stop_flag=Event()
+
+    signal.signal(signal.SIGINT,  signalHandler)
+    signal.signal(signal.SIGTERM, signalHandler)
+    signal.signal(signal.SIGALRM, signalHandler)
+
     parser=argparse.ArgumentParser(
         description="The main program of e-desk"
     )
@@ -250,8 +261,12 @@ if __name__ == "__main__":
 
     if args.sim:
         main=SimMain()
+        signal.alarm(1)
         while True:
+            if stop_flag.is_set():
+                break
             main.update()
+        sleep(2)
     else:
         main=Main()
         while True:

@@ -1,6 +1,7 @@
 import cv2
 from EdeskModule.sharedObject import Constants,MyProcess
 import numpy as np
+import signal
 from time import perf_counter
 #コンテンツクラス
 class Content:
