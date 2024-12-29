@@ -30,7 +30,7 @@ docker run -p -p 8000:8000 --rm watson9109/e-desk:latest
 ```
 python3 pythonserver.py
 ```
-`http://localhost:8000` にアクセスすることで結果が確認できる．
+http://localhost:8000 にアクセスすることで結果が確認できる．
 
 ### 仮想カメラとして入力する画像の作成
 ```
